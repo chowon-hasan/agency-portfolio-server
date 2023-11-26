@@ -163,14 +163,40 @@ async function run() {
       res.send(userFeaturedImages);
     });
 
-    // DELETED CLASS FROM DB
-    app.delete("/deleteimage/:id", async (req, res) => {
-      const id = req.params.id;
+    app.delete("/deleteimage/:imgLink", async (req, res) => {
+      const imgLink = req.params.imgLink;
+
       const query = {
-        _id: new ObjectId(id),
+        image: imgLink,
       };
-      const result = await FeaturedImageCollection.deleteOne(query);
-      res.send(result);
+
+      const update = {
+        $pull: {
+          image: imgLink,
+        },
+      };
+
+      try {
+        const result = await FeaturedImageCollection.updateOne(query, update);
+
+        if (result.modifiedCount > 0) {
+          res
+            .status(200)
+            .json({ success: true, message: "Image deleted successfully" });
+        } else {
+          res
+            .status(404)
+            .json({
+              success: false,
+              message: "Image not found or failed to delete",
+            });
+        }
+      } catch (error) {
+        console.error("Error deleting image:", error);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
     });
 
     app.post("/logos", async (req, res) => {
