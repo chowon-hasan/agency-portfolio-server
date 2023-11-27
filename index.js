@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
 
 app.use(cors());
 app.use(express.json());
@@ -19,6 +20,28 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({
+      error: true,
+      message: "Need access? send me some money then.... :3",
+    });
+  }
+  const token = authorization.split(" ")[1];
+  console.log("split token", token);
+  jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
+    if (error) {
+      return res.status(401).send({
+        error: true,
+        message: "get error from jwt verify at line 33 backend",
+      });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
 
 async function run() {
   try {
@@ -77,6 +100,17 @@ async function run() {
       .collection("userevents");
     const LogoCollection = client.db("agency-portfolio").collection("logos");
 
+    // ---------JWT----------------
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "10h",
+      });
+      res.send({ token });
+    });
+
+    // ---------JWT----------------
     app.post("/createuser", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -85,6 +119,9 @@ async function run() {
         return res.send({ message: "user already exits" });
       }
       const result = await UserCollection.insertOne(user);
+      // const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+      //   expiresIn: "1h",
+      // });
       res.send(result);
     });
 
@@ -112,7 +149,7 @@ async function run() {
       res.send(AllPhotoGraphys);
     });
 
-    app.get("/getuserinfo/:email", async (req, res) => {
+    app.get("/getuserinfo/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userInfo = await UserCollection.find(query).toArray();
@@ -154,7 +191,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/featuredimage/:email", async (req, res) => {
+    app.get("/featuredimage/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userFeaturedImages = await FeaturedImageCollection.find(query)
@@ -184,12 +221,10 @@ async function run() {
             .status(200)
             .json({ success: true, message: "Image deleted successfully" });
         } else {
-          res
-            .status(404)
-            .json({
-              success: false,
-              message: "Image not found or failed to delete",
-            });
+          res.status(404).json({
+            success: false,
+            message: "Image not found or failed to delete",
+          });
         }
       } catch (error) {
         console.error("Error deleting image:", error);
@@ -205,8 +240,15 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getLogos/:email", async (req, res) => {
+    app.get("/getLogos/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
+      const decodedResult = req.decoded;
+      console.log(
+        "from get logos",
+        req.headers.authorization,
+        "decoded ressulyyyy",
+        decodedResult
+      );
       const query = { email: UserEmail };
       const userLogos = await LogoCollection.find(query)
         .sort({ _id: -1 })
@@ -229,7 +271,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getphotoservice/:email", async (req, res) => {
+    app.get("/getphotoservice/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userphotoservice = await photoGraphyCollection
@@ -254,7 +296,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getcinevideos/:email", async (req, res) => {
+    app.get("/getcinevideos/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userCineVideo = await CinematographyCollection.find(query)
@@ -297,7 +339,7 @@ async function run() {
       }
     });
 
-    app.get("/getrecentworkimages/:email", async (req, res) => {
+    app.get("/getrecentworkimages/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { user: UserEmail };
       const userRecentworksimages = await userrecentWorksCollection
@@ -410,7 +452,7 @@ async function run() {
       }
     });
 
-    app.get("/getportfolioimages/:email", async (req, res) => {
+    app.get("/getportfolioimages/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { user: UserEmail };
       const userPortfolio = await userPortfolioCollection.find(query).toArray();
@@ -455,7 +497,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getmembers/:email", async (req, res) => {
+    app.get("/getmembers/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const usermembers = await UserMemberscollection.find(query)
@@ -479,7 +521,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getuserevents/:email", async (req, res) => {
+    app.get("/getuserevents/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userEventsandDate = await UserEventsCollection.find(query)
@@ -494,7 +536,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getusersection/:email", async (req, res) => {
+    app.get("/getusersection/:email", verifyJWT, async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userSectionInfo = await UserAddSection.find(query)
