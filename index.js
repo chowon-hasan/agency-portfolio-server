@@ -150,7 +150,7 @@ async function run() {
       res.send(AllPhotoGraphys);
     });
 
-    app.get("/getuserinfo/:email", verifyJWT, async (req, res) => {
+    app.get("/getuserinfo/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userInfo = await UserCollection.find(query).toArray();
@@ -192,7 +192,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/featuredimage/:email", verifyJWT, async (req, res) => {
+    app.get("/featuredimage/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userFeaturedImages = await FeaturedImageCollection.find(query)
@@ -241,7 +241,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getLogos/:email", verifyJWT, async (req, res) => {
+    app.get("/getLogos/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const decodedResult = req.decoded;
       console.log(
@@ -272,7 +272,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getphotoservice/:email", verifyJWT, async (req, res) => {
+    app.get("/getphotoservice/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userphotoservice = await photoGraphyCollection
@@ -297,7 +297,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getcinevideos/:email", verifyJWT, async (req, res) => {
+    app.get("/getcinevideos/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userCineVideo = await CinematographyCollection.find(query)
@@ -340,7 +340,7 @@ async function run() {
       }
     });
 
-    app.get("/getrecentworkimages/:email", verifyJWT, async (req, res) => {
+    app.get("/getrecentworkimages/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { user: UserEmail };
       const userRecentworksimages = await userrecentWorksCollection
@@ -453,7 +453,7 @@ async function run() {
       }
     });
 
-    app.get("/getportfolioimages/:email", verifyJWT, async (req, res) => {
+    app.get("/getportfolioimages/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { user: UserEmail };
       const userPortfolio = await userPortfolioCollection.find(query).toArray();
@@ -498,7 +498,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getmembers/:email", verifyJWT, async (req, res) => {
+    app.get("/getmembers/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const usermembers = await UserMemberscollection.find(query)
@@ -522,7 +522,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getuserevents/:email", verifyJWT, async (req, res) => {
+    app.get("/getuserevents/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userEventsandDate = await UserEventsCollection.find(query)
@@ -537,7 +537,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/getusersection/:email", verifyJWT, async (req, res) => {
+    app.get("/getusersection/:email", async (req, res) => {
       const UserEmail = req.params.email;
       const query = { email: UserEmail };
       const userSectionInfo = await UserAddSection.find(query)
